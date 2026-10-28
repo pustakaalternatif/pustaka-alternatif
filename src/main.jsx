@@ -1230,6 +1230,7 @@ function AdminShell({
   renameCategory, saveAuthor, deleteAuthor, onUploadCover,
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [modal, setModal] = useState(null);
   const [authorModal, setAuthorModal] = useState(null);
   const isBooks = route === '/admin/buku';
@@ -1247,26 +1248,50 @@ function AdminShell({
   const saveProfile = async (name) => {
     await onSaveProfile(name);
   };
+  const handleNav = (path) => {
+    navigate(path);
+    setMobileOpen(false);
+  };
   const pageTitle = isBooks ? 'Kelola buku' : isAuthors ? 'Penulis' : isOrders ? 'Pesanan' : isIdeas ? 'Ruang Ide' : isSettings ? 'Pengaturan' : isProfile ? 'Profil' : 'Ringkasan';
   return (
     <div className={`admin-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
-      <aside className="admin-sidebar">
-        <div className="admin-logo"><span className="brand-mark"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="" /></span><span><strong>PUSTAKA</strong><em>ALTERNATIF</em></span></div>
+      {mobileOpen && (
+        <div
+          className="admin-sidebar-backdrop"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside className={`admin-sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
+        <div className="admin-sidebar-header">
+          <div className="admin-logo" onClick={() => handleNav('/admin')}>
+            <span className="brand-mark"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="" /></span>
+            <span><strong>PUSTAKA</strong><em>ALTERNATIF</em></span>
+          </div>
+          <button
+            type="button"
+            className="admin-sidebar-close"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Tutup navigasi"
+          >
+            <X size={18} />
+          </button>
+        </div>
         <div className="admin-label">Workspace</div>
         <nav className="admin-nav">
-          <button className={!isBooks && !isAuthors && !isOrders && !isIdeas && !isSettings && !isProfile ? 'active' : ''} onClick={() => navigate('/admin')}><LayoutDashboard size={18} /><span>Ringkasan</span></button>
-          <button className={isBooks ? 'active' : ''} onClick={() => navigate('/admin/buku')}><Library size={18} /><span>Kelola buku</span><b>{books.length}</b></button>
-          <button className={isOrders ? 'active' : ''} onClick={() => navigate('/admin/pesanan')}><Check size={18} /><span>Pesanan</span><b>{orders.length}</b></button>
-          <button className={isAuthors ? 'active' : ''} onClick={() => navigate('/admin/penulis')}><Users size={18} /><span>Penulis</span><b>{authors.length}</b></button>
-          <button className={isIdeas ? 'active' : ''} onClick={() => navigate('/admin/ruang-ide')}><PenLine size={18} /><span>Ruang Ide</span><b>{(siteSettings.editorialIdeas || []).length}</b></button>
+          <button className={!isBooks && !isAuthors && !isOrders && !isIdeas && !isSettings && !isProfile ? 'active' : ''} onClick={() => handleNav('/admin')}><LayoutDashboard size={18} /><span>Ringkasan</span></button>
+          <button className={isBooks ? 'active' : ''} onClick={() => handleNav('/admin/buku')}><Library size={18} /><span>Kelola buku</span><b>{books.length}</b></button>
+          <button className={isOrders ? 'active' : ''} onClick={() => handleNav('/admin/pesanan')}><Check size={18} /><span>Pesanan</span><b>{orders.length}</b></button>
+          <button className={isAuthors ? 'active' : ''} onClick={() => handleNav('/admin/penulis')}><Users size={18} /><span>Penulis</span><b>{authors.length}</b></button>
+          <button className={isIdeas ? 'active' : ''} onClick={() => handleNav('/admin/ruang-ide')}><PenLine size={18} /><span>Ruang Ide</span><b>{(siteSettings.editorialIdeas || []).length}</b></button>
         </nav>
         <div className="admin-label">Pengaturan</div>
         <nav className="admin-nav">
-          <button className={isSettings ? 'active' : ''} onClick={() => navigate('/admin/pengaturan')}><Settings size={18} /><span>Pengaturan situs</span></button>
-          <button onClick={() => navigate('/')}><ArrowUpRight size={18} /><span>Lihat website</span></button>
+          <button className={isSettings ? 'active' : ''} onClick={() => handleNav('/admin/pengaturan')}><Settings size={18} /><span>Pengaturan situs</span></button>
+          <button onClick={() => handleNav('/')}><ArrowUpRight size={18} /><span>Lihat website</span></button>
         </nav>
         <div className="admin-sidebar-bottom">
-          <button className="admin-user" onClick={() => navigate('/admin/profil')}>
+          <button className="admin-user" onClick={() => handleNav('/admin/profil')}>
             <span className="avatar admin-avatar-brand"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="Logo" /></span>
             <span><strong>{profile.display_name || profile.email}</strong><small>{profile.role === 'admin' ? 'Administrator' : 'Editor'}</small></span>
             <ChevronDown size={14} />
@@ -1276,9 +1301,30 @@ function AdminShell({
       </aside>
       <section className="admin-main">
         <header className="admin-topbar">
-          <button className="collapse-button" onClick={() => setCollapsed(!collapsed)} aria-label="Ciutkan navigasi"><Menu size={19} /></button>
+          <button
+            type="button"
+            className="collapse-button"
+            onClick={() => {
+              if (window.innerWidth <= 850) {
+                setMobileOpen(!mobileOpen);
+              } else {
+                setCollapsed(!collapsed);
+              }
+            }}
+            aria-label="Menu navigasi"
+          >
+            <Menu size={19} />
+          </button>
+          <div className="admin-mobile-brand" onClick={() => handleNav('/admin')}>
+            <span className="brand-mark"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="" /></span>
+          </div>
           <div className="admin-breadcrumb"><span>Workspace</span><b>/</b><strong>{pageTitle}</strong></div>
-          <div className="admin-top-actions"><span className={`saved-status ${dataMode === 'error' ? 'saved-status-error' : ''}`}><span />{dataMode === 'supabase' ? 'Tersambung Supabase' : dataMode === 'loading' ? 'Memuat data…' : 'Data belum tersinkron'}</span><button className="help-button" title={dataError || 'Data katalog, pengaturan, dan pesanan tersimpan di Supabase.'} onClick={() => notify(dataError || 'Data panel disimpan ke Supabase dengan Row Level Security.', dataError ? 'error' : 'info')}><CircleHelp size={17} /></button><button className="admin-logout-icon" onClick={onSignOut} aria-label="Keluar dari panel admin" title="Keluar"><X size={16} /></button><button className="admin-avatar admin-profile-icon" onClick={() => navigate('/admin/profil')} aria-label="Buka profil admin" title="Profil admin"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="Profil" /></button></div>
+          <div className="admin-top-actions">
+            <span className={`saved-status ${dataMode === 'error' ? 'saved-status-error' : ''}`}><span />{dataMode === 'supabase' ? 'Tersambung Supabase' : dataMode === 'loading' ? 'Memuat data…' : 'Data belum tersinkron'}</span>
+            <button className="help-button" title={dataError || 'Data katalog, pengaturan, dan pesanan tersimpan di Supabase.'} onClick={() => notify(dataError || 'Data panel disimpan ke Supabase dengan Row Level Security.', dataError ? 'error' : 'info')}><CircleHelp size={17} /></button>
+            <button className="admin-logout-icon" onClick={onSignOut} aria-label="Keluar dari panel admin" title="Keluar"><X size={16} /></button>
+            <button className="admin-avatar admin-profile-icon" onClick={() => handleNav('/admin/profil')} aria-label="Buka profil admin" title="Profil admin"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="Profil" /></button>
+          </div>
         </header>
         <div className="admin-content">
           {isBooks ? <AdminBooks books={books} categories={categories} addCategory={addCategory} deleteCategory={deleteCategory} renameCategory={renameCategory} updateBook={updateBook} deleteBook={deleteBook} openModal={() => setModal('add')} openEdit={(book) => setModal({ type: 'edit', book })} />
@@ -1325,8 +1371,15 @@ function AdminIdeas({ settings, onSave, notify, onUploadImage }) {
     setUploadingId(id);
     try {
       const url = await onUploadImage(file, title || `ruang-ide-${id}`);
-      updateItem(id, 'image', url);
-      notify('Gambar tulisan berhasil diunggah ke Supabase Storage.');
+      const updated = items.map((item) => (item.id === id ? { ...item, image: url } : item));
+      setItems(updated);
+      setSaving(true);
+      try {
+        await onSave({ ...settings, editorialIdeas: updated });
+        notify('Gambar berhasil diunggah dan langsung tersimpan di website!');
+      } finally {
+        setSaving(false);
+      }
     } catch (error) {
       notify(error.message || 'Gagal mengunggah gambar.', 'error');
     } finally {
@@ -1339,11 +1392,16 @@ function AdminIdeas({ settings, onSave, notify, onUploadImage }) {
   });
   const publishedCount = items.filter((item) => item.status === 'Terbit').length;
   const save = async (event) => {
-    event.preventDefault();
+    if (event) event.preventDefault();
     const incomplete = items.find((item) => item.status === 'Terbit' && (!item.title?.trim() || !item.author?.trim() || !item.body?.trim()));
     if (incomplete) { notify('Tulisan berstatus Terbit perlu memiliki judul, nama penulis, dan isi.', 'error'); return; }
     setSaving(true);
-    try { await onSave({ ...settings, editorialIdeas: items }); } finally { setSaving(false); }
+    try {
+      await onSave({ ...settings, editorialIdeas: items });
+      notify('Perubahan tulisan dan gambar berhasil disimpan ke website!');
+    } finally {
+      setSaving(false);
+    }
   };
   return <div className="admin-ideas-page"><div className="admin-page-heading"><div><span className="eyebrow">Penerbitan digital</span><h1>Kelola <em>Ruang Ide.</em></h1><p>Atur tulisan publik, gambar sampul dari perangkat, kutipan pembuka, dan status penerbitan.</p></div><button className="button button-dark" type="button" onClick={addItem}><Plus size={16} /> Tulisan baru</button></div>
     <div className="idea-admin-stats"><div><strong>{items.length.toString().padStart(2, '0')}</strong><span>Total tulisan</span></div><div><strong>{publishedCount.toString().padStart(2, '0')}</strong><span>Terbit di situs</span></div><div><strong>{(items.length - publishedCount).toString().padStart(2, '0')}</strong><span>Draf</span></div></div>
@@ -1352,7 +1410,24 @@ function AdminIdeas({ settings, onSave, notify, onUploadImage }) {
         {item.image ? (
           <div className="idea-preview-box">
             <img src={item.image} alt="Pratinjau gambar tulisan" />
-            <button type="button" className="idea-remove-image-btn" onClick={() => updateItem(item.id, 'image', '')} title="Hapus gambar"><X size={13} /> Hapus gambar</button>
+            <button
+              type="button"
+              className="idea-remove-image-btn"
+              onClick={async () => {
+                const updated = items.map((e) => e.id === item.id ? { ...e, image: '' } : e);
+                setItems(updated);
+                setSaving(true);
+                try {
+                  await onSave({ ...settings, editorialIdeas: updated });
+                  notify('Gambar dihapus dan website telah diperbarui.');
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              title="Hapus gambar"
+            >
+              <X size={13} /> Hapus gambar
+            </button>
           </div>
         ) : (
           <div className="idea-preview-placeholder"><UploadCloud size={24} /><span>Belum ada gambar sampul</span></div>
@@ -1365,7 +1440,14 @@ function AdminIdeas({ settings, onSave, notify, onUploadImage }) {
           </span>
           <input type="file" accept="image/png,image/jpeg,image/webp" disabled={uploadingId === item.id} onChange={(event) => { void handleImageFile(item.id, event.target.files?.[0], item.title); event.target.value = ''; }} />
         </div>
-        <label className="form-field"><span>Atau URL / path gambar</span><input value={item.image || ''} onChange={(event) => updateItem(item.id, 'image', event.target.value)} placeholder="/assets/ruang-ide-01.jpeg" /></label>
+        <button
+          type="button"
+          className="button button-dark idea-save-card-button"
+          disabled={saving || uploadingId === item.id}
+          onClick={save}
+        >
+          <Check size={15} /> {saving ? 'Menyimpan…' : 'Simpan tulisan & gambar ini'}
+        </button>
       </div><div className="idea-admin-fields"><label className="form-field"><span>Judul tulisan <b>*</b></span><input required={item.status === 'Terbit'} maxLength="180" value={item.title || ''} onChange={(event) => updateItem(item.id, 'title', event.target.value)} placeholder="Judul tulisan" /></label><div className="idea-admin-meta-fields"><label className="form-field"><span>Penulis <b>*</b></span><input required={item.status === 'Terbit'} maxLength="100" value={item.author || ''} onChange={(event) => updateItem(item.id, 'author', event.target.value)} /></label><label className="form-field"><span>Tanggal terbit</span><input type="date" value={item.date || ''} onChange={(event) => updateItem(item.id, 'date', event.target.value)} /></label><label className="form-field"><span>Status</span><select value={item.status || 'Draf'} onChange={(event) => updateItem(item.id, 'status', event.target.value)}><option>Draf</option><option>Terbit</option></select></label></div><label className="form-field"><span>Teaser / kutipan pembuka</span><textarea rows="3" maxLength="320" value={item.excerpt || ''} onChange={(event) => updateItem(item.id, 'excerpt', event.target.value)} placeholder="Ringkasan singkat yang tampil pada kartu Ruang Ide" /></label></div></div><label className="form-field idea-admin-body"><span>Isi tulisan lengkap <b>*</b></span><textarea required={item.status === 'Terbit'} rows="10" maxLength="30000" value={item.body || ''} onChange={(event) => updateItem(item.id, 'body', event.target.value)} placeholder="Pisahkan paragraf dengan satu baris kosong." /><small>Pisahkan paragraf dengan baris kosong; seluruh isi tampil saat pembaca membuka tulisan.</small></label></article>)}
         {!filteredItems.length && <div className="idea-admin-empty">{items.length ? 'Tidak ada tulisan yang cocok dengan pencarian atau status ini.' : 'Belum ada tulisan. Pilih “Tulisan baru” untuk mulai.'}</div>}
       </div><div className="settings-save-row idea-admin-save"><p>Perubahan tulisan disimpan bersama pengaturan situs dan langsung mengatur apa yang tampil di halaman Ruang Ide.</p><button className="button button-dark" type="submit" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan tulisan'} <Check size={16} /></button></div>
