@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   Library,
   List,
+  LogOut,
   Menu,
   MapPinned,
   Mail,
@@ -27,6 +28,7 @@ import {
   Phone,
   PenLine,
   Plus,
+  Printer,
   Search,
   Settings,
   Sparkles,
@@ -606,7 +608,7 @@ function App() {
     <>
       {isAdmin ? (
         authState.loading ? <AdminLoading /> : !authState.profile ? (
-          <AdminLoginPage configured={hasSupabaseConfig} error={authState.error} onLogin={handleLogin} onRequestOtp={requestPasswordRecoveryOtp} onCompleteRecovery={handlePasswordRecovery} navigate={navigate} />
+          <AdminLoginPage configured={hasSupabaseConfig} error={authState.error} onLogin={handleLogin} onRequestOtp={requestPasswordRecoveryOtp} onCompleteRecovery={handlePasswordRecovery} navigate={navigate} logoUrl={siteSettings?.logoUrl} />
         ) : (
           <AdminShell
             books={books}
@@ -660,7 +662,7 @@ function AdminLoading() {
   return <main className="admin-auth-page"><section className="admin-auth-card"><span className="eyebrow">Workspace aman</span><h1>Memeriksa <em>sesi admin.</em></h1><p>Memastikan akun memiliki akses admin yang aktif.</p></section></main>;
 }
 
-function AdminLoginPage({ configured, error, onLogin, onRequestOtp, onCompleteRecovery, navigate }) {
+function AdminLoginPage({ configured, error, onLogin, onRequestOtp, onCompleteRecovery, navigate, logoUrl }) {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -706,7 +708,7 @@ function AdminLoginPage({ configured, error, onLogin, onRequestOtp, onCompleteRe
       <section className="admin-auth-card">
         <div className="admin-auth-brand-lockup">
           <button className="brand admin-auth-brand" onClick={() => navigate('/')} aria-label="Kembali ke situs">
-            <span className="brand-mark"><img src={image('logo-remove-background.png')} alt="" /></span>
+            <span className="brand-mark"><img src={logoUrl || image('logo-remove-background.png')} alt="" /></span>
           </button>
           <strong>PUSTAKA</strong><em>ALTERNATIF</em>
         </div>
@@ -734,7 +736,7 @@ function PublicShell({ children, route, navigate, mobileNav, setMobileNav, setti
     <div className="public-shell">
       <header className="site-header">
         <button className="brand" onClick={() => navigate('/')} aria-label="Pustaka Alternatif, kembali ke beranda">
-          <span className="brand-mark"><img src={image('logo-remove-background.png')} alt="" /></span>
+          <span className="brand-mark"><img src={settings?.logoUrl || image('logo-remove-background.png')} alt="" /></span>
           <span className="brand-text"><strong>PUSTAKA</strong><em>ALTERNATIF</em></span>
         </button>
         <button className="mobile-menu" onClick={() => setMobileNav(!mobileNav)} aria-label="Buka menu"><Menu size={20} /></button>
@@ -757,7 +759,7 @@ function PublicFooter({ navigate, settings, showContact = true }) {
     <footer className="public-footer">
       <div className="footer-top">
         <div className="footer-brand-block">
-          <div className="footer-wordmark"><span className="mini-mark"><img src={image('logo-remove-background.png')} alt="" /></span><span>{settings.publisherName || 'Pustaka'}<br /><i>ALTERNATIF</i></span></div>
+          <div className="footer-wordmark"><span className="mini-mark"><img src={settings?.logoUrl || image('logo-remove-background.png')} alt="" /></span><span>{settings.publisherName || 'Pustaka'}<br /><i>ALTERNATIF</i></span></div>
           <p>{settings.tagline}</p>
         </div>
         <div className="footer-column"><span className="footer-label">Jelajah</span><button onClick={() => navigate('/katalog')}>Katalog buku</button><button onClick={() => navigate('/tentang')}>Tentang kami</button><button onClick={() => navigate('/ruang-ide')}>Ruang ide</button><button onClick={() => navigate('/naskah-kerjasama')}>Naskah & kerja sama</button></div>
@@ -1249,7 +1251,7 @@ function AdminShell({
   return (
     <div className={`admin-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
       <aside className="admin-sidebar">
-        <div className="admin-logo"><span className="brand-mark"><img src={image('logo-remove-background.png')} alt="" /></span><span><strong>PUSTAKA</strong><em>ALTERNATIF</em></span></div>
+        <div className="admin-logo"><span className="brand-mark"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="" /></span><span><strong>PUSTAKA</strong><em>ALTERNATIF</em></span></div>
         <div className="admin-label">Workspace</div>
         <nav className="admin-nav">
           <button className={!isBooks && !isAuthors && !isOrders && !isIdeas && !isSettings && !isProfile ? 'active' : ''} onClick={() => navigate('/admin')}><LayoutDashboard size={18} /><span>Ringkasan</span></button>
@@ -1264,23 +1266,27 @@ function AdminShell({
           <button onClick={() => navigate('/')}><ArrowUpRight size={18} /><span>Lihat website</span></button>
         </nav>
         <div className="admin-sidebar-bottom">
-          <button className="admin-user" onClick={() => navigate('/admin/profil')}><span className="avatar">{(profile.display_name || profile.email || 'AD').slice(0, 2).toUpperCase()}</span><span><strong>{profile.display_name || profile.email}</strong><small>{profile.role === 'admin' ? 'Administrator' : 'Editor'}</small></span><ChevronDown size={14} /></button>
-          <button className="admin-signout" onClick={onSignOut}><X size={16} /> Keluar dari panel</button>
+          <button className="admin-user" onClick={() => navigate('/admin/profil')}>
+            <span className="avatar admin-avatar-brand"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="Logo" /></span>
+            <span><strong>{profile.display_name || profile.email}</strong><small>{profile.role === 'admin' ? 'Administrator' : 'Editor'}</small></span>
+            <ChevronDown size={14} />
+          </button>
+          <button className="admin-signout" onClick={onSignOut} title="Keluar dari panel admin"><LogOut size={15} /> Keluar dari panel</button>
         </div>
       </aside>
       <section className="admin-main">
         <header className="admin-topbar">
           <button className="collapse-button" onClick={() => setCollapsed(!collapsed)} aria-label="Ciutkan navigasi"><Menu size={19} /></button>
           <div className="admin-breadcrumb"><span>Workspace</span><b>/</b><strong>{pageTitle}</strong></div>
-          <div className="admin-top-actions"><span className={`saved-status ${dataMode === 'error' ? 'saved-status-error' : ''}`}><span />{dataMode === 'supabase' ? 'Tersambung Supabase' : dataMode === 'loading' ? 'Memuat data…' : 'Data belum tersinkron'}</span><button className="help-button" title={dataError || 'Data katalog, pengaturan, dan pesanan tersimpan di Supabase.'} onClick={() => notify(dataError || 'Data panel disimpan ke Supabase dengan Row Level Security.', dataError ? 'error' : 'info')}><CircleHelp size={17} /></button><button className="admin-logout-icon" onClick={onSignOut} aria-label="Keluar dari panel admin" title="Keluar"><X size={16} /></button><button className="admin-avatar admin-profile-icon" onClick={() => navigate('/admin/profil')} aria-label="Buka profil admin" title="Profil admin">{(profile.display_name || profile.email || 'AD').slice(0, 2).toUpperCase()}</button></div>
+          <div className="admin-top-actions"><span className={`saved-status ${dataMode === 'error' ? 'saved-status-error' : ''}`}><span />{dataMode === 'supabase' ? 'Tersambung Supabase' : dataMode === 'loading' ? 'Memuat data…' : 'Data belum tersinkron'}</span><button className="help-button" title={dataError || 'Data katalog, pengaturan, dan pesanan tersimpan di Supabase.'} onClick={() => notify(dataError || 'Data panel disimpan ke Supabase dengan Row Level Security.', dataError ? 'error' : 'info')}><CircleHelp size={17} /></button><button className="admin-logout-icon" onClick={onSignOut} aria-label="Keluar dari panel admin" title="Keluar"><X size={16} /></button><button className="admin-avatar admin-profile-icon" onClick={() => navigate('/admin/profil')} aria-label="Buka profil admin" title="Profil admin"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="Profil" /></button></div>
         </header>
         <div className="admin-content">
           {isBooks ? <AdminBooks books={books} categories={categories} addCategory={addCategory} deleteCategory={deleteCategory} renameCategory={renameCategory} updateBook={updateBook} deleteBook={deleteBook} openModal={() => setModal('add')} openEdit={(book) => setModal({ type: 'edit', book })} />
             : isAuthors ? <AdminAuthors authors={authors} books={books} openModal={() => setAuthorModal('add')} openEdit={(author) => setAuthorModal({ type: 'edit', author })} deleteAuthor={deleteAuthor} />
               : isOrders ? <AdminOrders orders={orders} onStatusChange={onOrderStatus} />
-                : isIdeas ? <AdminIdeas settings={siteSettings} onSave={onSaveSettings} notify={notify} />
-                  : isSettings ? <AdminSettings settings={siteSettings} onSave={onSaveSettings} notify={notify} navigate={navigate} />
-                  : isProfile ? <AdminProfile profile={profile} user={user} onSave={saveProfile} onSignOut={onSignOut} notify={notify} />
+                : isIdeas ? <AdminIdeas settings={siteSettings} onSave={onSaveSettings} notify={notify} onUploadImage={onUploadCover} />
+                  : isSettings ? <AdminSettings settings={siteSettings} onSave={onSaveSettings} notify={notify} navigate={navigate} onUploadLogo={onUploadCover} />
+                  : isProfile ? <AdminProfile profile={profile} user={user} onSave={saveProfile} onSignOut={onSignOut} notify={notify} logoUrl={siteSettings.logoUrl} />
                     : <AdminOverview books={books} orders={orders} stats={stats} openModal={() => setModal('add')} navigate={navigate} />}
         </div>
       </section>
@@ -1297,17 +1303,35 @@ function AdminOverview({ books, orders, stats, openModal, navigate }) {
 
 function AdminStat({ label, value, change, icon, tone }) { return <div className={`admin-stat stat-${tone}`}><div className="stat-icon">{icon}</div><span>{label}</span><strong>{value.toString().padStart(2, '0')}</strong><small>{change}</small></div>; }
 
-function AdminIdeas({ settings, onSave, notify }) {
+function AdminIdeas({ settings, onSave, notify, onUploadImage }) {
   const [items, setItems] = useState(() => Array.isArray(settings.editorialIdeas) ? settings.editorialIdeas : []);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('Semua status');
   const [saving, setSaving] = useState(false);
+  const [uploadingId, setUploadingId] = useState(null);
   useEffect(() => setItems(Array.isArray(settings.editorialIdeas) ? settings.editorialIdeas : []), [settings.editorialIdeas]);
   const updateItem = (id, field, value) => setItems((current) => current.map((item) => item.id === id ? { ...item, [field]: value } : item));
   const addItem = () => setItems((current) => [{ id: globalThis.crypto?.randomUUID?.() || `idea-${Date.now()}`, title: '', author: 'Mun’im Sirry', date: '', status: 'Draf', image: '', excerpt: '', body: '' }, ...current]);
   const deleteItem = (id) => {
     const item = items.find((entry) => entry.id === id);
     if (window.confirm(`Hapus tulisan “${item?.title || 'Tanpa judul'}” dari Ruang Ide?`)) setItems((current) => current.filter((entry) => entry.id !== id));
+  };
+  const handleImageFile = async (id, file, title) => {
+    if (!file) return;
+    if (!onUploadImage) {
+      notify('Fungsi upload gambar belum tersedia.', 'error');
+      return;
+    }
+    setUploadingId(id);
+    try {
+      const url = await onUploadImage(file, title || `ruang-ide-${id}`);
+      updateItem(id, 'image', url);
+      notify('Gambar tulisan berhasil diunggah ke Supabase Storage.');
+    } catch (error) {
+      notify(error.message || 'Gagal mengunggah gambar.', 'error');
+    } finally {
+      setUploadingId(null);
+    }
   };
   const filteredItems = items.filter((item) => {
     const matchesQuery = `${item.title || ''} ${item.author || ''} ${item.excerpt || ''}`.toLocaleLowerCase('id').includes(query.toLocaleLowerCase('id'));
@@ -1321,19 +1345,38 @@ function AdminIdeas({ settings, onSave, notify }) {
     setSaving(true);
     try { await onSave({ ...settings, editorialIdeas: items }); } finally { setSaving(false); }
   };
-  return <div className="admin-ideas-page"><div className="admin-page-heading"><div><span className="eyebrow">Penerbitan digital</span><h1>Kelola <em>Ruang Ide.</em></h1><p>Atur tulisan publik, gambar, kutipan pembuka, dan status penerbitan.</p></div><button className="button button-dark" type="button" onClick={addItem}><Plus size={16} /> Tulisan baru</button></div>
+  return <div className="admin-ideas-page"><div className="admin-page-heading"><div><span className="eyebrow">Penerbitan digital</span><h1>Kelola <em>Ruang Ide.</em></h1><p>Atur tulisan publik, gambar sampul dari perangkat, kutipan pembuka, dan status penerbitan.</p></div><button className="button button-dark" type="button" onClick={addItem}><Plus size={16} /> Tulisan baru</button></div>
     <div className="idea-admin-stats"><div><strong>{items.length.toString().padStart(2, '0')}</strong><span>Total tulisan</span></div><div><strong>{publishedCount.toString().padStart(2, '0')}</strong><span>Terbit di situs</span></div><div><strong>{(items.length - publishedCount).toString().padStart(2, '0')}</strong><span>Draf</span></div></div>
     <form onSubmit={save}><div className="idea-admin-toolbar"><label className="search-field"><Search size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari judul atau penulis…" /></label><label className="select-field"><Filter size={15} /><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>Semua status</option><option>Draf</option><option>Terbit</option></select></label><span>{filteredItems.length} dari {items.length} tulisan</span></div>
-      <div className="idea-admin-list">{filteredItems.map((item, index) => <article className="idea-admin-card" key={item.id || index}><div className="idea-admin-card-top"><div><span className="eyebrow">Tulisan {String(items.indexOf(item) + 1).padStart(2, '0')}</span><strong>{item.status === 'Terbit' ? 'Terbit' : 'Draf'}</strong></div><button className="text-button delete-idea-button" type="button" onClick={() => deleteItem(item.id)}><Trash2 size={15} /> Hapus</button></div><div className="idea-admin-card-grid"><div className="idea-admin-media">{item.image ? <img src={item.image} alt="Pratinjau gambar tulisan" /> : <span>Tambahkan gambar tulisan</span>}<label className="form-field"><span>URL / path gambar</span><input value={item.image || ''} onChange={(event) => updateItem(item.id, 'image', event.target.value)} placeholder="/assets/ruang-ide-01.jpeg" /></label></div><div className="idea-admin-fields"><label className="form-field"><span>Judul tulisan <b>*</b></span><input required={item.status === 'Terbit'} maxLength="180" value={item.title || ''} onChange={(event) => updateItem(item.id, 'title', event.target.value)} placeholder="Judul tulisan" /></label><div className="idea-admin-meta-fields"><label className="form-field"><span>Penulis <b>*</b></span><input required={item.status === 'Terbit'} maxLength="100" value={item.author || ''} onChange={(event) => updateItem(item.id, 'author', event.target.value)} /></label><label className="form-field"><span>Tanggal terbit</span><input type="date" value={item.date || ''} onChange={(event) => updateItem(item.id, 'date', event.target.value)} /></label><label className="form-field"><span>Status</span><select value={item.status || 'Draf'} onChange={(event) => updateItem(item.id, 'status', event.target.value)}><option>Draf</option><option>Terbit</option></select></label></div><label className="form-field"><span>Teaser / kutipan pembuka</span><textarea rows="3" maxLength="320" value={item.excerpt || ''} onChange={(event) => updateItem(item.id, 'excerpt', event.target.value)} placeholder="Ringkasan singkat yang tampil pada kartu Ruang Ide" /></label></div></div><label className="form-field idea-admin-body"><span>Isi tulisan lengkap <b>*</b></span><textarea required={item.status === 'Terbit'} rows="10" maxLength="30000" value={item.body || ''} onChange={(event) => updateItem(item.id, 'body', event.target.value)} placeholder="Pisahkan paragraf dengan satu baris kosong." /><small>Pisahkan paragraf dengan baris kosong; seluruh isi tampil saat pembaca membuka tulisan.</small></label></article>)}
+      <div className="idea-admin-list">{filteredItems.map((item, index) => <article className="idea-admin-card" key={item.id || index}><div className="idea-admin-card-top"><div><span className="eyebrow">Tulisan {String(items.indexOf(item) + 1).padStart(2, '0')}</span><strong>{item.status === 'Terbit' ? 'Terbit' : 'Draf'}</strong></div><button className="text-button delete-idea-button" type="button" onClick={() => deleteItem(item.id)}><Trash2 size={15} /> Hapus</button></div><div className="idea-admin-card-grid"><div className="idea-admin-media">
+        {item.image ? (
+          <div className="idea-preview-box">
+            <img src={item.image} alt="Pratinjau gambar tulisan" />
+            <button type="button" className="idea-remove-image-btn" onClick={() => updateItem(item.id, 'image', '')} title="Hapus gambar"><X size={13} /> Hapus gambar</button>
+          </div>
+        ) : (
+          <div className="idea-preview-placeholder"><UploadCloud size={24} /><span>Belum ada gambar sampul</span></div>
+        )}
+        <div className="upload-field upload-field-compact">
+          <UploadCloud size={18} />
+          <span>
+            <strong>{uploadingId === item.id ? 'Mengunggah ke Supabase…' : item.image ? 'Ganti gambar dari perangkat' : 'Upload dari perangkat'}</strong>
+            <small>PNG, JPG, WEBP · Maks. 10 MB</small>
+          </span>
+          <input type="file" accept="image/png,image/jpeg,image/webp" disabled={uploadingId === item.id} onChange={(event) => { void handleImageFile(item.id, event.target.files?.[0], item.title); event.target.value = ''; }} />
+        </div>
+        <label className="form-field"><span>Atau URL / path gambar</span><input value={item.image || ''} onChange={(event) => updateItem(item.id, 'image', event.target.value)} placeholder="/assets/ruang-ide-01.jpeg" /></label>
+      </div><div className="idea-admin-fields"><label className="form-field"><span>Judul tulisan <b>*</b></span><input required={item.status === 'Terbit'} maxLength="180" value={item.title || ''} onChange={(event) => updateItem(item.id, 'title', event.target.value)} placeholder="Judul tulisan" /></label><div className="idea-admin-meta-fields"><label className="form-field"><span>Penulis <b>*</b></span><input required={item.status === 'Terbit'} maxLength="100" value={item.author || ''} onChange={(event) => updateItem(item.id, 'author', event.target.value)} /></label><label className="form-field"><span>Tanggal terbit</span><input type="date" value={item.date || ''} onChange={(event) => updateItem(item.id, 'date', event.target.value)} /></label><label className="form-field"><span>Status</span><select value={item.status || 'Draf'} onChange={(event) => updateItem(item.id, 'status', event.target.value)}><option>Draf</option><option>Terbit</option></select></label></div><label className="form-field"><span>Teaser / kutipan pembuka</span><textarea rows="3" maxLength="320" value={item.excerpt || ''} onChange={(event) => updateItem(item.id, 'excerpt', event.target.value)} placeholder="Ringkasan singkat yang tampil pada kartu Ruang Ide" /></label></div></div><label className="form-field idea-admin-body"><span>Isi tulisan lengkap <b>*</b></span><textarea required={item.status === 'Terbit'} rows="10" maxLength="30000" value={item.body || ''} onChange={(event) => updateItem(item.id, 'body', event.target.value)} placeholder="Pisahkan paragraf dengan satu baris kosong." /><small>Pisahkan paragraf dengan baris kosong; seluruh isi tampil saat pembaca membuka tulisan.</small></label></article>)}
         {!filteredItems.length && <div className="idea-admin-empty">{items.length ? 'Tidak ada tulisan yang cocok dengan pencarian atau status ini.' : 'Belum ada tulisan. Pilih “Tulisan baru” untuk mulai.'}</div>}
       </div><div className="settings-save-row idea-admin-save"><p>Perubahan tulisan disimpan bersama pengaturan situs dan langsung mengatur apa yang tampil di halaman Ruang Ide.</p><button className="button button-dark" type="submit" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan tulisan'} <Check size={16} /></button></div>
     </form>
   </div>;
 }
 
-function AdminSettings({ settings, onSave, notify, navigate }) {
+function AdminSettings({ settings, onSave, notify, navigate, onUploadLogo }) {
   const [form, setForm] = useState(settings);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   useEffect(() => setForm(settings), [settings]);
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const submit = async (event) => {
@@ -1347,6 +1390,55 @@ function AdminSettings({ settings, onSave, notify, navigate }) {
     <div className="admin-settings">
       <div className="admin-page-heading"><div><span className="eyebrow">Kontrol publik</span><h1>Pengaturan <em>situs.</em></h1><p>Perubahan disimpan ke Supabase dan digunakan di halaman publik.</p></div></div>
       <form onSubmit={submit} className="settings-grid">
+        <section className="admin-panel settings-panel">
+          <div className="panel-heading"><div><span className="eyebrow">Identitas visual</span><h2>Logo website & branding</h2><p>Ubah logo utama yang tampil di seluruh header, footer, dan panel admin.</p></div><Sparkles size={19} className="sparkle" /></div>
+          <div className="settings-form">
+            <div className="admin-logo-edit-box">
+              <div className="admin-logo-preview">
+                <img src={form.logoUrl || image('logo-remove-background.png')} alt="Logo website" />
+                <span>{form.logoUrl ? 'Logo kustom aktif' : 'Logo bawaan (default)'}</span>
+              </div>
+              <div className="admin-logo-actions">
+                <div className="upload-field upload-field-compact">
+                  <UploadCloud size={20} />
+                  <span>
+                    <strong>{uploadingLogo ? 'Mengunggah logo…' : 'Upload logo dari perangkat'}</strong>
+                    <small>PNG (transparan disarankan), SVG, JPG · Maks. 5 MB</small>
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    disabled={uploadingLogo}
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0];
+                      if (!file) return;
+                      if (!onUploadLogo) { notify('Fungsi upload logo belum tersedia.', 'error'); return; }
+                      setUploadingLogo(true);
+                      try {
+                        const url = await onUploadLogo(file, 'logo-pustaka-alternatif');
+                        update('logoUrl', url);
+                        notify('Logo baru berhasil diunggah ke Supabase Storage.');
+                      } catch (err) {
+                        notify(err.message || 'Gagal mengunggah logo', 'error');
+                      } finally {
+                        setUploadingLogo(false);
+                        event.target.value = '';
+                      }
+                    }}
+                  />
+                </div>
+                {form.logoUrl && (
+                  <button type="button" className="button button-ghost" onClick={() => update('logoUrl', '')}>
+                    Reset ke logo bawaan
+                  </button>
+                )}
+              </div>
+            </div>
+            <label className="form-field wide"><span>Atau URL / path logo</span><input value={form.logoUrl || ''} onChange={(event) => update('logoUrl', event.target.value)} placeholder="/assets/logo-remove-background.png atau https://…" /></label>
+            <label className="form-field wide"><span>Email resmi kontak</span><input type="email" value={form.contactEmail || 'pustakaalternatif@gmail.com'} onChange={(event) => update('contactEmail', event.target.value)} placeholder="pustakaalternatif@gmail.com" /></label>
+            <label className="form-field wide"><span>Alamat kantor / editorial</span><textarea rows="2" value={form.contactAddress || ''} onChange={(event) => update('contactAddress', event.target.value)} placeholder="Alamat editorial atau kantor penerbit…" /></label>
+          </div>
+        </section>
         <section className="admin-panel settings-panel">
           <div className="panel-heading"><div><span className="eyebrow">Identitas penerbit</span><h2>Informasi publik</h2></div><Settings size={19} className="settings-icon" /></div>
           <div className="settings-form">
@@ -1378,7 +1470,7 @@ function AdminSettings({ settings, onSave, notify, navigate }) {
   );
 }
 
-function AdminProfile({ profile, user, onSave, onSignOut, notify }) {
+function AdminProfile({ profile, user, onSave, onSignOut, notify, logoUrl }) {
   const [name, setName] = useState(profile.display_name || user.user_metadata?.display_name || '');
   const [saving, setSaving] = useState(false);
   const submit = async (event) => {
@@ -1392,7 +1484,7 @@ function AdminProfile({ profile, user, onSave, onSignOut, notify }) {
       <div className="admin-page-heading"><div><span className="eyebrow">Workspace / Akun</span><h1>Profil <em>admin.</em></h1><p>Kelola nama tampilan akun dan periksa peran keamanan.</p></div><button className="button button-ghost" onClick={onSignOut}>Keluar <X size={16} /></button></div>
       <div className="profile-grid">
         <section className="admin-panel profile-card">
-          <div className="profile-identity"><div className="profile-avatar">{(profile.display_name || profile.email || 'AD').slice(0, 2).toUpperCase()}</div><div><h2>{profile.display_name || profile.email}</h2><p>{profile.role === 'admin' ? 'Administrator' : 'Editor'} · {profile.is_active ? 'Akses aktif' : 'Akses nonaktif'}</p><span className="status-pill published">Terverifikasi</span></div></div>
+          <div className="profile-identity"><div className="profile-avatar profile-avatar-brand"><img src={logoUrl || image('logo-remove-background.png')} alt="Logo" /></div><div><h2>{profile.display_name || profile.email}</h2><p>{profile.role === 'admin' ? 'Administrator' : 'Editor'} · {profile.is_active ? 'Akses aktif' : 'Akses nonaktif'}</p><span className="status-pill published">Terverifikasi</span></div></div>
           <div className="profile-rule" />
           <form className="profile-form" onSubmit={submit}><label className="form-field"><span>Email admin</span><input value={profile.email || user.email || ''} readOnly /></label><label className="form-field"><span>Nama tampilan</span><input maxLength="80" required value={name} onChange={(event) => setName(event.target.value)} /></label><div className="modal-actions"><button className="button button-dark" type="submit" disabled={saving}>{saving ? 'Menyimpan…' : 'Simpan profil'} <Check size={16} /></button></div></form>
         </section>
@@ -1437,10 +1529,178 @@ function AdminOrders({ orders, onStatusChange }) {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
+  const downloadDocx = () => {
+    if (!filteredOrders.length) return;
+    const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const rowsHtml = filteredOrders.map((o) => `
+      <tr>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt;">${o.id || ''}</td>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt;">${o.createdAt ? new Date(o.createdAt).toLocaleDateString('id-ID') : '-'}</td>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt;"><strong>${o.bookTitle || ''}</strong></td>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt; text-align: center;">${o.quantity || 1}</td>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt;"><strong>${o.name || ''}</strong></td>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt;">${o.phone || '-'}</td>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt;">${o.address || '-'} ${o.location ? '(' + o.location + ')' : ''}</td>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt; text-align: right;"><strong>${o.totalPrice || o.price || '-'}</strong></td>
+        <td style="padding: 8px 10px; border: 1px solid #d1d5db; font-size: 10pt; text-align: center;">${o.status || 'Baru'}</td>
+      </tr>
+    `).join('');
+
+    const htmlContent = `<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset='utf-8'>
+<title>Laporan Pesanan Pustaka Alternatif</title>
+<style>
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; margin: 20px; color: #1e293b; }
+  h1 { color: #034694; font-size: 18pt; margin-bottom: 2pt; font-weight: bold; }
+  p.meta { color: #64748b; font-size: 10pt; margin-top: 0; margin-bottom: 16pt; }
+  table { border-collapse: collapse; width: 100%; border: 1px solid #94a3b8; }
+  th { background-color: #034694; color: #ffffff; padding: 10px 8px; font-size: 10.5pt; font-weight: bold; border: 1px solid #034694; text-align: left; }
+</style>
+</head>
+<body>
+  <h1>PUSTAKA ALTERNATIF — LAPORAN PESANAN PELANGGAN</h1>
+  <p class="meta">Tanggal Ekspor: ${dateStr} · Total Data: ${filteredOrders.length} Pesanan</p>
+  <table>
+    <thead>
+      <tr>
+        <th style="color:#ffffff;">ID Pesanan</th>
+        <th style="color:#ffffff;">Tanggal</th>
+        <th style="color:#ffffff;">Judul Buku</th>
+        <th style="color:#ffffff; text-align:center;">Jml</th>
+        <th style="color:#ffffff;">Pelanggan</th>
+        <th style="color:#ffffff;">WhatsApp</th>
+        <th style="color:#ffffff;">Alamat Pengiriman</th>
+        <th style="color:#ffffff; text-align:right;">Total</th>
+        <th style="color:#ffffff; text-align:center;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHtml}
+    </tbody>
+  </table>
+</body>
+</html>`;
+
+    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `pesanan-pustaka-alternatif-${new Date().toISOString().slice(0, 10)}.doc`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const downloadPdf = () => {
+    if (!filteredOrders.length) return;
+    const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const rowsHtml = filteredOrders.map((o, idx) => `
+      <tr class="${idx % 2 === 1 ? 'even' : ''}">
+        <td><strong style="font-family:monospace; color:#034694;">${o.id || ''}</strong></td>
+        <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString('id-ID') : '-'}</td>
+        <td><strong>${o.bookTitle || ''}</strong></td>
+        <td style="text-align:center;">${o.quantity || 1}</td>
+        <td><strong>${o.name || ''}</strong></td>
+        <td>${o.phone || '-'}</td>
+        <td>${o.address || '-'} ${o.location ? '(' + o.location + ')' : ''}</td>
+        <td style="text-align:right;"><strong>${o.totalPrice || o.price || '-'}</strong></td>
+        <td style="text-align:center;"><span class="status-tag status-${(o.status || 'baru').toLowerCase()}">${o.status || 'Baru'}</span></td>
+      </tr>
+    `).join('');
+
+    const printWin = window.open('', '_blank');
+    if (!printWin) return;
+    printWin.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Laporan Pesanan - Pustaka Alternatif</title>
+<style>
+  @page { size: landscape; margin: 12mm 10mm; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; font-size: 11px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2.5px solid #034694; padding-bottom: 12px; margin-bottom: 16px; }
+  .header h1 { margin: 0 0 4px; font-size: 20px; color: #034694; letter-spacing: -0.02em; }
+  .header p { margin: 0; color: #64748b; font-size: 11px; }
+  .summary { font-size: 12px; text-align: right; }
+  .summary strong { color: #034694; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td { border: 1px solid #cbd5e1; padding: 7px 9px; text-align: left; }
+  th { background-color: #034694; color: #ffffff; font-weight: 600; font-size: 11px; }
+  tr.even { background-color: #f8fafc; }
+  .status-tag { display: inline-block; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 600; }
+  .status-baru { background: #dbeafe; color: #1e40af; }
+  .status-diproses { background: #fef3c7; color: #92400e; }
+  .status-dikirim { background: #e0e7ff; color: #3730a3; }
+  .status-selesai { background: #dcfce7; color: #166534; }
+  .status-dibatalkan { background: #fee2e2; color: #991b1b; }
+  .footer { margin-top: 24px; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+  @media print {
+    body { padding: 0; }
+    .no-print { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>PUSTAKA ALTERNATIF — LAPORAN PESANAN</h1>
+      <p>Membuka Wacana, Menyalakan Gagasan · Laporan Cetak Resmi</p>
+    </div>
+    <div class="summary">
+      Tanggal Cetak: <strong>${dateStr}</strong><br/>
+      Total: <strong>${filteredOrders.length} Pesanan</strong>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 13%;">ID Pesanan</th>
+        <th style="width: 9%;">Tanggal</th>
+        <th style="width: 20%;">Buku</th>
+        <th style="width: 5%; text-align:center;">Jml</th>
+        <th style="width: 14%;">Pelanggan</th>
+        <th style="width: 11%;">WhatsApp</th>
+        <th style="width: 15%;">Alamat</th>
+        <th style="width: 8%; text-align:right;">Total</th>
+        <th style="width: 5%; text-align:center;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHtml}
+    </tbody>
+  </table>
+  <div class="footer">
+    <span>Dokumen resmi dikeluarkan oleh sistem internal Pustaka Alternatif</span>
+    <span>Halaman 1</span>
+  </div>
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 300);
+    };
+  </script>
+</body>
+</html>`);
+    printWin.document.close();
+  };
+
   return (
     <div className="admin-orders">
       <div className="admin-page-heading"><div><span className="eyebrow">Pesanan pelanggan</span><h1>Kelola <em>pesanan.</em></h1><p>Pantau pesanan, perbarui status dan ekspor data pelanggan dengan aman.</p></div><span className="orders-provider">{orders.length} pesanan</span></div>
-      <div className="orders-toolbar"><label className="search-field"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari nomor, buku, pelanggan, atau alamat…" aria-label="Cari pesanan" /></label><label className="select-field"><Filter size={16} /><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter status pesanan"><option>Semua status</option>{statuses.map((status) => <option key={status}>{status}</option>)}</select><ChevronDown size={15} /></label><span className="result-count">{filteredOrders.length} dari {orders.length} pesanan</span><button className="button button-ghost" type="button" onClick={downloadCsv} disabled={!filteredOrders.length}><Download size={16} /> Unduh CSV</button></div>
+      <div className="orders-toolbar">
+        <label className="search-field"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari nomor, buku, pelanggan, atau alamat…" aria-label="Cari pesanan" /></label>
+        <label className="select-field"><Filter size={16} /><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter status pesanan"><option>Semua status</option>{statuses.map((status) => <option key={status}>{status}</option>)}</select><ChevronDown size={15} /></label>
+        <span className="result-count">{filteredOrders.length} dari {orders.length} pesanan</span>
+        <div className="orders-export-group">
+          <button className="button button-ghost export-button" type="button" onClick={downloadCsv} disabled={!filteredOrders.length} title="Unduh format spreadsheet CSV"><Download size={15} /> Unduh CSV</button>
+          <button className="button button-ghost export-button" type="button" onClick={downloadPdf} disabled={!filteredOrders.length} title="Cetak atau simpan ke PDF"><Printer size={15} /> Unduh PDF</button>
+          <button className="button button-ghost export-button" type="button" onClick={downloadDocx} disabled={!filteredOrders.length} title="Unduh format dokumen Word DOCX"><FileText size={15} /> Unduh DOCX</button>
+        </div>
+      </div>
       <section className="admin-panel orders-panel"><div className="orders-head"><span>Rincian pesanan</span><span>Pelanggan & pengiriman</span><span>Status</span><span>Waktu</span></div>
         {filteredOrders.length ? filteredOrders.map((order) => <div className="order-row" key={order.id}>
           <div><strong>{order.bookTitle} × {order.quantity || 1}</strong><small>{order.id}</small><small>{order.price} / buku</small><small className="order-total">Total buku: {order.totalPrice}</small></div>

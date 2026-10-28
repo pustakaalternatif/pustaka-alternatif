@@ -2659,3 +2659,401 @@ textarea,
 .idea-detail-copy p:first-child::first-letter {
   color: #000000 !important;
 }
+
+/* ==========================================================================
+   Admin Sidebar, Navigation, Logo, Ruang Ide Upload & Orders Export Redesign
+   ========================================================================== */
+
+/* 1. Left Sidebar Navigation - Crisp White Typography & High Contrast */
+.admin-sidebar {
+  background: linear-gradient(180deg, #05163d 0%, #08235a 100%) !important;
+}
+
+.admin-label {
+  color: #ffffff !important;
+  opacity: 0.8 !important;
+  font-size: 9px !important;
+  letter-spacing: 0.16em !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  margin: 16px 0 8px !important;
+  padding: 0 13px !important;
+}
+
+.admin-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+}
+
+.admin-nav button {
+  width: 100% !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  opacity: 0.92 !important;
+  padding: 11px 13px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-align: left !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-nav button svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  flex-shrink: 0 !important;
+}
+
+.admin-nav button span {
+  color: #ffffff !important;
+}
+
+.admin-nav button:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  transform: translateX(3px) !important;
+}
+
+.admin-nav button.active {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+  box-shadow: inset 4px 0 0 #ff725e !important;
+}
+
+.admin-nav button b {
+  margin-left: auto !important;
+  min-width: 22px !important;
+  padding: 3px 7px !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  border-radius: 999px !important;
+  text-align: center !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+}
+
+/* 2. Admin User Profile Card (Bottom Left) */
+.admin-sidebar-bottom {
+  margin-top: auto !important;
+  padding: 16px 8px 10px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.16) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 9px !important;
+}
+
+.admin-user {
+  width: 100% !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 10px !important;
+  padding: 9px 11px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: #ffffff !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box !important;
+}
+
+.admin-user:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+.admin-user > span:nth-child(2) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  margin-right: auto !important;
+  min-width: 0 !important;
+}
+
+.admin-user strong {
+  color: #ffffff !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.admin-user small {
+  color: rgba(255, 255, 255, 0.72) !important;
+  font-size: 9.5px !important;
+  font-weight: 500 !important;
+}
+
+.admin-user svg {
+  color: rgba(255, 255, 255, 0.7) !important;
+  stroke: rgba(255, 255, 255, 0.7) !important;
+  flex-shrink: 0 !important;
+}
+
+/* 3. Logo Avatars replacing round "AD" badge */
+.admin-avatar-brand {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  padding: 3px !important;
+  overflow: hidden !important;
+  display: grid !important;
+  place-items: center !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  flex-shrink: 0 !important;
+}
+
+.admin-avatar-brand img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+.admin-profile-icon {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 1.5px solid #034694 !important;
+  padding: 3px !important;
+  overflow: hidden !important;
+  display: grid !important;
+  place-items: center !important;
+  box-shadow: 0 2px 6px rgba(3, 70, 148, 0.15) !important;
+  cursor: pointer !important;
+}
+
+.admin-profile-icon img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+.profile-avatar-brand {
+  width: 68px !important;
+  height: 68px !important;
+  min-width: 68px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 2px solid #034694 !important;
+  padding: 5px !important;
+  overflow: hidden !important;
+  display: grid !important;
+  place-items: center !important;
+  box-shadow: 0 4px 16px rgba(3, 70, 148, 0.15) !important;
+}
+
+.profile-avatar-brand img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+/* 4. Realistic, High-Contrast Sign Out Button */
+.admin-signout {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 9px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(248, 113, 113, 0.45) !important;
+  background: rgba(239, 68, 68, 0.16) !important;
+  color: #fecaca !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-signout svg {
+  color: inherit !important;
+  stroke: currentColor !important;
+  flex-shrink: 0 !important;
+}
+
+.admin-signout:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35) !important;
+}
+
+/* 5. Ruang Ide Media Upload Styling */
+.idea-admin-media {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.idea-preview-box {
+  position: relative !important;
+  width: 100% !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  border: 1px solid #dce1e9 !important;
+  background: #061b49 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+
+.idea-preview-box img {
+  width: 100% !important;
+  max-height: 220px !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+.idea-remove-image-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 8px auto !important;
+  padding: 5px 12px !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #dc2626 !important;
+  border-radius: 6px !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+}
+
+.idea-remove-image-btn:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.idea-preview-placeholder {
+  min-height: 130px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: 2px dashed #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 16px !important;
+  text-align: center !important;
+}
+
+.upload-field-compact {
+  min-height: 64px !important;
+  padding: 11px 14px !important;
+  border: 1.5px dashed #034694 !important;
+  background: #eff6ff !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.upload-field-compact:hover {
+  background: #dbeafe !important;
+  border-color: #022e64 !important;
+}
+
+.upload-field-compact strong {
+  color: #034694 !important;
+}
+
+/* 6. Logo & Branding Edit Box in Settings */
+.admin-logo-edit-box {
+  display: flex !important;
+  gap: 18px !important;
+  align-items: center !important;
+  padding: 16px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  margin-bottom: 14px !important;
+  flex-wrap: wrap !important;
+}
+
+.admin-logo-preview {
+  width: 96px !important;
+  height: 96px !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+  flex-shrink: 0 !important;
+}
+
+.admin-logo-preview img {
+  max-width: 100% !important;
+  max-height: 64px !important;
+  object-fit: contain !important;
+}
+
+.admin-logo-preview span {
+  font-size: 8px !important;
+  color: #64748b !important;
+  margin-top: 4px !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+}
+
+.admin-logo-actions {
+  flex: 1 !important;
+  min-width: 240px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+/* 7. Orders Toolbar Export Group (CSV, PDF, DOCX) */
+.orders-export-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.export-button {
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  transition: all 0.2s ease !important;
+}
+
+.export-button:hover:not(:disabled) {
+  background: #034694 !important;
+  color: #ffffff !important;
+  border-color: #034694 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(3, 70, 148, 0.2) !important;
+}
+

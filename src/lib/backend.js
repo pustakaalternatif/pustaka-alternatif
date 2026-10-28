@@ -31,6 +31,9 @@ export const defaultSiteSettings = {
   editorialIdeas: DEFAULT_EDITORIAL_IDEAS,
   submissionIntro: 'PUSTAKA ALTERNATIF menyambut percakapan dengan penulis, penerjemah, pemegang hak, toko buku, dan komunitas literasi. Kami tertarik pada kerja sama yang memperluas akses terhadap bacaan bermutu dan mendukung pendidikan publik.',
   submissionsOpen: false,
+  logoUrl: '',
+  contactEmail: 'pustakaalternatif@gmail.com',
+  contactAddress: '',
 };
 
 const assertNoError = (error) => {
@@ -130,6 +133,9 @@ const mapSettings = (row) => ({
     : defaultSiteSettings.editorialIdeas,
   submissionIntro: row.editorial_content?.submissionIntro || defaultSiteSettings.submissionIntro,
   submissionsOpen: row.editorial_content?.submissionsOpen ?? defaultSiteSettings.submissionsOpen,
+  logoUrl: row.editorial_content?.logoUrl || defaultSiteSettings.logoUrl,
+  contactEmail: row.editorial_content?.contactEmail || defaultSiteSettings.contactEmail,
+  contactAddress: row.editorial_content?.contactAddress || defaultSiteSettings.contactAddress,
 });
 
 const toSettingsRow = (settings) => ({
@@ -146,6 +152,9 @@ const toSettingsRow = (settings) => ({
     editorialSeedVersion: '20261027-ruang-ide',
     submissionIntro: String(settings.submissionIntro || defaultSiteSettings.submissionIntro).trim(),
     submissionsOpen: Boolean(settings.submissionsOpen),
+    logoUrl: String(settings.logoUrl || '').trim(),
+    contactEmail: String(settings.contactEmail || defaultSiteSettings.contactEmail).trim(),
+    contactAddress: String(settings.contactAddress || '').trim(),
   },
 });
 
@@ -432,12 +441,16 @@ export async function saveSiteSettings(settings) {
 }
 
 export async function uploadBookCover(file, bookTitle) {
-  if (!supabaseClient) throw new Error('Upload sampul permanen memerlukan konfigurasi Supabase Storage.');
-  if (!['image/jpeg', 'image/png'].includes(file.type)) throw new Error('Format sampul harus PNG atau JPG.');
-  if (file.size > 10 * 1024 * 1024) throw new Error('Ukuran sampul maksimal 10 MB.');
-  const extension = file.type === 'image/png' ? 'png' : 'jpg';
-  const slug = String(bookTitle || 'sampul-buku').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const path = `${slug || 'sampul-buku'}/${globalThis.crypto?.randomUUID?.() || Date.now()}.${extension}`;
+  if (!supabaseClient) throw new Error('Upload permanen memerlukan konfigurasi Supabase Storage.');
+  if (!['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'].includes(file.type)) {
+    throw new Error('Format gambar harus PNG, JPG, WEBP, atau SVG.');
+  }
+  if (file.size > 10 * 1024 * 1024) throw new Error('Ukuran gambar maksimal 10 MB.');
+  const extension = file.type === 'image/png' ? 'png'
+    : file.type === 'image/webp' ? 'webp'
+    : file.type === 'image/svg+xml' ? 'svg' : 'jpg';
+  const slug = String(bookTitle || 'media').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const path = `${slug || 'media'}/${globalThis.crypto?.randomUUID?.() || Date.now()}.${extension}`;
   const { error } = await supabaseClient.storage.from('book-covers').upload(path, file, {
     cacheControl: '3600',
     contentType: file.type,
