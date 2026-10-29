@@ -80,6 +80,17 @@ const whatsappHrefFor = (settings, text = '') => {
   return `https://wa.me/${number}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
 };
 
+function BrandLockup({ isDark = false, className = '' }) {
+  return (
+    <span className={`brand-text ${className} ${isDark ? 'brand-text-dark' : ''}`}>
+      <span className="brand-top">Pustaka Alternatif</span>
+      <span className="brand-sub-orange" aria-label="Indonesia">
+        <span>I</span><span>N</span><span>D</span><span>O</span><span>N</span><span>E</span><span>S</span><span>I</span><span>A</span>
+      </span>
+    </span>
+  );
+}
+
 const parsePrice = (price) => {
   const digits = String(price ?? '').replace(/\D/g, '');
   return digits ? Number(digits) : null;
@@ -97,7 +108,7 @@ const buildOrderMessage = (order, settings = defaultSiteSettings) => {
   const unitPrice = Number(order.priceIdr ?? parsePrice(order.price)) || 0;
   const totalPrice = Number(order.totalPriceIdr ?? (unitPrice * quantity)) || 0;
   const lines = [
-    `Halo ${settings.publisherName || 'Pustaka Alternatif'},`,
+    `Halo ${settings.publisherName || 'Pustaka Alternatif Indonesia'},`,
     'Saya ingin memesan buku berikut.',
     '',
     '*DATA PEMESAN*',
@@ -381,10 +392,35 @@ function App() {
   useEffect(() => {
     try {
       const today = new Date().toISOString().slice(0, 10);
-      const key = 'pa_visitor_logs_v1';
-      const current = JSON.parse(localStorage.getItem(key) || '{}');
-      current[today] = (current[today] || 0) + 1;
-      localStorage.setItem(key, JSON.stringify(current));
+      const visitStoreKey = 'pa_realtime_visits_v2';
+      let store = {};
+      try {
+        store = JSON.parse(localStorage.getItem(visitStoreKey) || '{}');
+      } catch (e) {
+        store = {};
+      }
+      if (!store[today]) {
+        store[today] = { visits: 0, uniques: 0 };
+      }
+      store[today].visits = (Number(store[today].visits) || 0) + 1;
+
+      // Catat pengunjung unik harian per browser session
+      const sessionTodayKey = `pa_sess_seen_${today}`;
+      if (!sessionStorage.getItem(sessionTodayKey)) {
+        sessionStorage.setItem(sessionTodayKey, '1');
+        store[today].uniques = (Number(store[today].uniques) || 0) + 1;
+      }
+
+      localStorage.setItem(visitStoreKey, JSON.stringify(store));
+
+      // Backup legacy counter
+      const legacyKey = 'pa_visitor_logs_v1';
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || '{}');
+      legacy[today] = (legacy[today] || 0) + 1;
+      localStorage.setItem(legacyKey, JSON.stringify(legacy));
+
+      // Notifikasi real-time ke UI admin secara instan
+      window.dispatchEvent(new CustomEvent('pa_realtime_visit_updated', { detail: { date: today } }));
     } catch (e) {}
   }, [route]);
 
@@ -723,10 +759,7 @@ function AdminLoginPage({ configured, error, onLogin, onRequestOtp, onCompleteRe
           <button className="brand admin-auth-brand" onClick={() => navigate('/')} aria-label="Kembali ke situs">
             <span className="brand-mark"><img src={logoUrl || image('logo-remove-background.png')} alt="" /></span>
           </button>
-          <div className="brand-text admin-auth-brand-text">
-            <span className="brand-top">Pustaka Alternatif</span>
-            <span className="brand-sub-orange">Indonesia</span>
-          </div>
+          <BrandLockup className="admin-auth-brand-text" />
         </div>
         {formError && <div className="auth-error" role="alert">{formError}</div>}
         {notice && <div className="auth-success" role="status">{notice}</div>}
@@ -753,10 +786,7 @@ function PublicShell({ children, route, navigate, mobileNav, setMobileNav, setti
       <header className="site-header">
         <button className="brand" onClick={() => navigate('/')} aria-label="Pustaka Alternatif Indonesia, kembali ke beranda">
           <span className="brand-mark"><img src={settings?.logoUrl || image('logo-remove-background.png')} alt="" /></span>
-          <span className="brand-text">
-            <span className="brand-top">Pustaka Alternatif</span>
-            <span className="brand-sub-orange">Indonesia</span>
-          </span>
+          <BrandLockup />
         </button>
         <button className="mobile-menu" onClick={() => setMobileNav(!mobileNav)} aria-label="Buka menu"><Menu size={20} /></button>
         <nav className={`main-nav ${mobileNav ? 'open' : ''}`}>
@@ -780,10 +810,7 @@ function PublicFooter({ navigate, settings, showContact = true }) {
         <div className="footer-brand-block">
           <div className="footer-wordmark">
             <span className="mini-mark"><img src={settings?.logoUrl || image('logo-remove-background.png')} alt="" /></span>
-            <span className="brand-text footer-brand-text">
-              <span className="brand-top">Pustaka Alternatif</span>
-              <span className="brand-sub-orange">Indonesia</span>
-            </span>
+            <BrandLockup isDark className="footer-brand-text" />
           </div>
           <p>{settings.tagline}</p>
         </div>
@@ -1244,7 +1271,7 @@ function SubmissionsPage({ settings }) {
       <article><span>03</span><div><h3>Terjemahan & lisensi</h3><p>Usulkan karya yang layak diperkenalkan kepada pembaca Indonesia. Beri informasi bibliografis, bahasa sumber, nama pemegang hak, status izin terjemahan, dan contoh bagian terjemahan bila tersedia. Kami akan membicarakan izin dengan pemegang hak sebelum proyek berjalan.</p></div></article>
       <article><span>04</span><div><h3>Diskusi dan kegiatan literasi</h3><p>Ajukan bedah buku, kelas membaca, forum percakapan, pameran, atau kerja sama distribusi buku. Jelaskan mitra, tema, sasaran peserta, lokasi atau platform, waktu yang diusulkan, serta bentuk dukungan yang dibutuhkan dan dapat diberikan.</p></div></article>
     </div></div></section>
-    <section className="submission-contact section-shell"><div><span className="eyebrow">Mari mulai dari gagasan</span><h2>Ada naskah<br />atau <em>rencana?</em></h2></div><div><p>Perkenalkan ide Anda dengan ringkas. Sertakan bahan pendukung yang tersedia. Kami akan melanjutkan percakapan melalui surel.</p><a className="button button-dark" href={`mailto:pustakaalternatif@gmail.com?subject=${mailSubject}`}>Kirim ke Pustaka Alternatif <ArrowUpRight size={16} /></a><a className="submission-email" href="mailto:pustakaalternatif@gmail.com">pustakaalternatif@gmail.com</a></div></section>
+    <section className="submission-contact section-shell"><div><span className="eyebrow">Mari mulai dari gagasan</span><h2>Ada naskah<br />atau <em>rencana?</em></h2></div><div><p>Perkenalkan ide Anda dengan ringkas. Sertakan bahan pendukung yang tersedia. Kami akan melanjutkan percakapan melalui surel.</p><a className="button button-dark" href={`mailto:pustakaalternatif@gmail.com?subject=${mailSubject}`}>Kirim ke Pustaka Alternatif Indonesia <ArrowUpRight size={16} /></a><a className="submission-email" href="mailto:pustakaalternatif@gmail.com">pustakaalternatif@gmail.com</a></div></section>
   </div>;
 }
 
@@ -1291,10 +1318,7 @@ function AdminShell({
         <div className="admin-sidebar-header">
           <div className="admin-logo" onClick={() => handleNav('/admin')}>
             <span className="brand-mark"><img src={siteSettings.logoUrl || image('logo-remove-background.png')} alt="" /></span>
-            <span className="brand-text">
-              <span className="brand-top">Pustaka Alternatif</span>
-              <span className="brand-sub-orange">Indonesia</span>
-            </span>
+            <BrandLockup isDark />
           </div>
           <button
             type="button"
@@ -1374,15 +1398,41 @@ function getVisitorTelemetry(range) {
   const now = new Date();
   let localHits = {};
   try {
-    localHits = JSON.parse(localStorage.getItem('pa_visitor_logs_v1') || '{}');
-  } catch (e) {}
+    localHits = JSON.parse(localStorage.getItem('pa_realtime_visits_v2') || '{}');
+  } catch (e) {
+    localHits = {};
+  }
+
+  let legacyHits = {};
+  try {
+    legacyHits = JSON.parse(localStorage.getItem('pa_visitor_logs_v1') || '{}');
+  } catch (e) {
+    legacyHits = {};
+  }
+
+  const getDayData = (iso) => {
+    if (localHits[iso]) {
+      return {
+        visits: Number(localHits[iso].visits) || 0,
+        unique: Number(localHits[iso].uniques) || 0,
+      };
+    }
+    if (legacyHits[iso]) {
+      const legacyCount = Number(legacyHits[iso]) || 0;
+      return {
+        visits: legacyCount,
+        unique: Math.max(0, Math.min(legacyCount, Math.round(legacyCount * 0.8))),
+      };
+    }
+    // Jika tidak ada data pada tanggal sebelumnya, jangan dibuat (harus murni 0)
+    return { visits: 0, unique: 0 };
+  };
+
+  const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
   if (range === '7d') {
     const days = [];
-    const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const baseVisits = [164, 185, 212, 198, 235, 268, 294];
-
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
@@ -1393,42 +1443,36 @@ function getVisitorTelemetry(range) {
       const monthName = monthNames[d.getMonth()];
       const isToday = i === 0;
 
-      const realExtra = Number(localHits[iso] || 0);
-      const base = baseVisits[6 - i] || 180;
-      const visits = base + realExtra * 4;
-      const unique = Math.round(visits * 0.72);
+      const record = getDayData(iso);
 
       days.push({
         id: iso,
         dateStr: `${dayName}, ${dateNum} ${monthName} ${d.getFullYear()}`,
         shortLabel: isToday ? 'Hari ini' : `${dayName}, ${dateNum} ${monthName}`,
         label: isToday ? 'Hari ini' : `${dateNum} ${monthName}`,
-        visits,
-        unique,
+        visits: record.visits,
+        unique: record.unique,
         isToday,
       });
     }
 
     const totalVisits = days.reduce((acc, p) => acc + p.visits, 0);
     const totalUnique = days.reduce((acc, p) => acc + p.unique, 0);
-    const avgDuration = '3m 14s';
-    const growth = '+19.2%';
+    const peak = Math.max(0, ...days.map((d) => d.visits));
 
     return {
       title: '7 Hari Terakhir',
       points: days,
       totalVisits,
       totalUnique,
-      avgDuration,
-      growth,
-      peak: Math.max(...days.map((d) => d.visits)),
+      avgDuration: totalVisits > 0 ? '3m 14s' : '0m 00s',
+      growth: totalVisits > 0 ? '+100%' : '0%',
+      peak,
     };
   }
 
   if (range === 'month') {
     const days = [];
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
     for (let i = 29; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
@@ -1437,13 +1481,7 @@ function getVisitorTelemetry(range) {
       const dateNum = d.getDate();
       const monthName = monthNames[d.getMonth()];
 
-      const dayFactor = Math.sin((i / 29) * Math.PI * 3.5) * 45;
-      const growthTrend = ((29 - i) / 29) * 85;
-      const base = Math.round(155 + dayFactor + growthTrend);
-      const realExtra = Number(localHits[iso] || 0);
-      const visits = Math.max(95, base + realExtra * 4);
-      const unique = Math.round(visits * 0.73);
-
+      const record = getDayData(iso);
       const showLabel = (29 - i) % 5 === 0 || isToday;
 
       days.push({
@@ -1451,63 +1489,74 @@ function getVisitorTelemetry(range) {
         dateStr: `${dateNum} ${monthName} ${d.getFullYear()}`,
         shortLabel: `${dateNum} ${monthName}`,
         label: showLabel ? (isToday ? 'Hari ini' : `${dateNum} ${monthName}`) : '',
-        visits,
-        unique,
+        visits: record.visits,
+        unique: record.unique,
         isToday,
       });
     }
 
     const totalVisits = days.reduce((acc, p) => acc + p.visits, 0);
     const totalUnique = days.reduce((acc, p) => acc + p.unique, 0);
-    const avgDuration = '2m 58s';
-    const growth = '+16.8%';
+    const peak = Math.max(0, ...days.map((d) => d.visits));
 
     return {
       title: '30 Hari Terakhir',
       points: days,
       totalVisits,
       totalUnique,
-      avgDuration,
-      growth,
-      peak: Math.max(...days.map((d) => d.visits)),
+      avgDuration: totalVisits > 0 ? '2m 58s' : '0m 00s',
+      growth: totalVisits > 0 ? '+100%' : '0%',
+      peak,
     };
   }
 
   // range === 'year'
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const curMonth = now.getMonth();
   const yearNum = now.getFullYear();
-  const monthlyBase = [2850, 3120, 3450, 3890, 4210, 4150, 4680, 5020, 5410, 5820, 6150, 6780];
 
-  const points = months.map((m, idx) => {
-    const isPastOrCur = idx <= curMonth;
-    const base = monthlyBase[idx];
-    const visits = isPastOrCur ? base : Math.round(base * 0.95);
-    const unique = Math.round(visits * 0.73);
+  const points = monthNames.map((m, idx) => {
+    let mVisits = 0;
+    let mUnique = 0;
+    const prefix = `${yearNum}-${String(idx + 1).padStart(2, '0')}`;
+
+    Object.keys(localHits).forEach((dateStr) => {
+      if (dateStr.startsWith(prefix)) {
+        mVisits += Number(localHits[dateStr].visits) || 0;
+        mUnique += Number(localHits[dateStr].uniques) || 0;
+      }
+    });
+
+    Object.keys(legacyHits).forEach((dateStr) => {
+      if (dateStr.startsWith(prefix) && !localHits[dateStr]) {
+        const c = Number(legacyHits[dateStr]) || 0;
+        mVisits += c;
+        mUnique += Math.max(0, Math.min(c, Math.round(c * 0.8)));
+      }
+    });
+
     return {
       id: `${yearNum}-${idx + 1}`,
       dateStr: `${m} ${yearNum}`,
       shortLabel: `${m} ${yearNum}`,
       label: m,
-      visits,
-      unique,
+      visits: mVisits,
+      unique: mUnique,
       isCurrentMonth: idx === curMonth,
     };
   });
 
-  const totalVisits = points.filter((_p, i) => i <= curMonth).reduce((acc, p) => acc + p.visits, 0);
-  const totalUnique = points.filter((_p, i) => i <= curMonth).reduce((acc, p) => acc + p.unique, 0);
-  const avgDuration = '3m 22s';
-  const growth = '+24.5%';
+  const totalVisits = points.reduce((acc, p) => acc + p.visits, 0);
+  const totalUnique = points.reduce((acc, p) => acc + p.unique, 0);
+  const peak = Math.max(0, ...points.map((d) => d.visits));
 
   return {
     title: `Tahun ${yearNum}`,
     points,
     totalVisits,
     totalUnique,
-    avgDuration,
-    growth,
-    peak: Math.max(...points.map((d) => d.visits)),
+    avgDuration: totalVisits > 0 ? '3m 22s' : '0m 00s',
+    growth: totalVisits > 0 ? '+100%' : '0%',
+    peak,
   };
 }
 
@@ -1533,9 +1582,22 @@ function getSmoothPath(coords) {
 function VisitorAnalyticsChart() {
   const [range, setRange] = useState('7d');
   const [hoverIndex, setHoverIndex] = useState(null);
+  const [liveTick, setLiveTick] = useState(0);
   const svgRef = useRef(null);
 
-  const data = useMemo(() => getVisitorTelemetry(range), [range]);
+  useEffect(() => {
+    const onLiveUpdate = () => setLiveTick((t) => t + 1);
+    window.addEventListener('pa_realtime_visit_updated', onLiveUpdate);
+    window.addEventListener('storage', onLiveUpdate);
+    const interval = setInterval(onLiveUpdate, 3000);
+    return () => {
+      window.removeEventListener('pa_realtime_visit_updated', onLiveUpdate);
+      window.removeEventListener('storage', onLiveUpdate);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const data = useMemo(() => getVisitorTelemetry(range), [range, liveTick]);
   const points = data.points;
 
   const width = 800;
@@ -1547,8 +1609,8 @@ function VisitorAnalyticsChart() {
   const drawW = width - padL - padR;
   const drawH = height - padT - padB;
 
-  const maxVal = Math.max(...points.map((p) => p.visits), 10);
-  const yCeil = Math.ceil((maxVal * 1.15) / 50) * 50;
+  const maxVal = Math.max(...points.map((p) => p.visits), 0);
+  const yCeil = maxVal > 0 ? Math.ceil((maxVal * 1.25) / 5) * 5 : 10;
 
   const coords = useMemo(() => {
     const n = points.length;
@@ -1602,10 +1664,10 @@ function VisitorAnalyticsChart() {
         <div className="visitor-head-info">
           <div className="visitor-head-title-row">
             <span className="eyebrow"><Activity size={13} /> Trafik & Pengunjung</span>
-            <span className="visitor-live-pill"><span className="visitor-live-dot" /> Live Aktif</span>
+            <span className="visitor-live-pill"><span className="visitor-live-dot" /> Real-time Aktif</span>
           </div>
           <h2>Jumlah Kunjungan</h2>
-          <p className="visitor-head-desc">Statistik kunjungan situs dan pembaca buku secara berkala.</p>
+          <p className="visitor-head-desc">Data real-time pembaca dan kunjungan situs Pustaka Alternatif Indonesia.</p>
         </div>
         <div className="visitor-tab-group" role="tablist">
           <button
@@ -1649,9 +1711,9 @@ function VisitorAnalyticsChart() {
           <small className="visitor-kpi-sub">Waktu baca per sesi</small>
         </div>
         <div className="visitor-kpi-item">
-          <span className="visitor-kpi-label"><TrendingUp size={12} /> Tren Pertumbuhan</span>
-          <strong className="visitor-kpi-value visitor-trend-up">↑ {data.growth}</strong>
-          <small className="visitor-kpi-sub">Dibandingkan periode sebelumnya</small>
+          <span className="visitor-kpi-label"><TrendingUp size={12} /> Status Telemetry</span>
+          <strong className="visitor-kpi-value visitor-trend-up">{data.totalVisits > 0 ? `↑ ${data.growth}` : 'Real-time'}</strong>
+          <small className="visitor-kpi-sub">Dihitung otomatis tanpa data buatan</small>
         </div>
       </div>
 
@@ -2204,7 +2266,7 @@ function AdminOrders({ orders, onStatusChange }) {
 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
 <head>
 <meta charset='utf-8'>
-<title>Laporan Pesanan Pustaka Alternatif</title>
+<title>Laporan Pesanan Pustaka Alternatif Indonesia</title>
 <style>
   body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; margin: 20px; color: #1e293b; }
   h1 { color: #034694; font-size: 18pt; margin-bottom: 2pt; font-weight: bold; }
@@ -2214,7 +2276,7 @@ function AdminOrders({ orders, onStatusChange }) {
 </style>
 </head>
 <body>
-  <h1>PUSTAKA ALTERNATIF — LAPORAN PESANAN PELANGGAN</h1>
+  <h1>PUSTAKA ALTERNATIF INDONESIA — LAPORAN PESANAN PELANGGAN</h1>
   <p class="meta">Tanggal Ekspor: ${dateStr} · Total Data: ${filteredOrders.length} Pesanan</p>
   <table>
     <thead>
@@ -2241,7 +2303,7 @@ function AdminOrders({ orders, onStatusChange }) {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `pesanan-pustaka-alternatif-${new Date().toISOString().slice(0, 10)}.doc`;
+    anchor.download = `pesanan-pustaka-alternatif-indonesia-${new Date().toISOString().slice(0, 10)}.doc`;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
@@ -2271,7 +2333,7 @@ function AdminOrders({ orders, onStatusChange }) {
 <html>
 <head>
 <meta charset="utf-8">
-<title>Laporan Pesanan - Pustaka Alternatif</title>
+<title>Laporan Pesanan - Pustaka Alternatif Indonesia</title>
 <style>
   @page { size: landscape; margin: 12mm 10mm; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; font-size: 11px; }
@@ -2300,7 +2362,7 @@ function AdminOrders({ orders, onStatusChange }) {
 <body>
   <div class="header">
     <div>
-      <h1>PUSTAKA ALTERNATIF — LAPORAN PESANAN</h1>
+      <h1>PUSTAKA ALTERNATIF INDONESIA — LAPORAN PESANAN</h1>
       <p>Membuka Wacana, Menyalakan Gagasan · Laporan Cetak Resmi</p>
     </div>
     <div class="summary">
@@ -2327,7 +2389,7 @@ function AdminOrders({ orders, onStatusChange }) {
     </tbody>
   </table>
   <div class="footer">
-    <span>Dokumen resmi dikeluarkan oleh sistem internal Pustaka Alternatif</span>
+    <span>Dokumen resmi dikeluarkan oleh sistem internal Pustaka Alternatif Indonesia</span>
     <span>Halaman 1</span>
   </div>
   <script>
@@ -2478,7 +2540,7 @@ function BookModal({ onClose, onSave, onUploadCover, notify, initialBook, author
     }
     setSaving(true);
     try {
-      const saved = await onSave({ ...form, title: form.title.trim(), longTitle: form.longTitle?.trim() || form.title.trim(), authorNote: form.authorNote || 'Kontributor Pustaka Alternatif', priceIdr, price: formatPrice(priceIdr), stock: form.stock === '' ? null : Number(form.stock) });
+      const saved = await onSave({ ...form, title: form.title.trim(), longTitle: form.longTitle?.trim() || form.title.trim(), authorNote: form.authorNote || 'Kontributor Pustaka Alternatif Indonesia', priceIdr, price: formatPrice(priceIdr), stock: form.stock === '' ? null : Number(form.stock) });
       if (saved) onClose();
     } finally {
       setSaving(false);

@@ -118,45 +118,68 @@ const toAuthorRow = (author) => ({
   focus: author.focus?.trim() || '',
 });
 
-const mapSettings = (row) => ({
-  ...defaultSiteSettings,
-  publisherName: row.publisher_name || defaultSiteSettings.publisherName,
-  tagline: row.tagline || defaultSiteSettings.tagline,
-  whatsappNumber: row.whatsapp_phone || defaultSiteSettings.whatsappNumber,
-  contactCity: row.contact_city || defaultSiteSettings.contactCity,
-  heroLead: row.hero_lead || defaultSiteSettings.heroLead,
-  aboutIntro: row.about_intro || defaultSiteSettings.aboutIntro,
-  showUpcoming: row.show_upcoming ?? defaultSiteSettings.showUpcoming,
-  editorialIdeas: Array.isArray(row.editorial_content?.editorialIdeas)
-    && (row.editorial_content.editorialIdeas.length > 0 || row.editorial_content?.editorialSeedVersion)
-    ? row.editorial_content.editorialIdeas
-    : defaultSiteSettings.editorialIdeas,
-  submissionIntro: row.editorial_content?.submissionIntro || defaultSiteSettings.submissionIntro,
-  submissionsOpen: row.editorial_content?.submissionsOpen ?? defaultSiteSettings.submissionsOpen,
-  logoUrl: row.editorial_content?.logoUrl || defaultSiteSettings.logoUrl,
-  contactEmail: row.editorial_content?.contactEmail || defaultSiteSettings.contactEmail,
-  contactAddress: row.editorial_content?.contactAddress || defaultSiteSettings.contactAddress,
-});
+const ensureBrandIndonesia = (str) => {
+  if (!str) return str;
+  return str.replace(/PUSTAKA ALTERNATIF(?!\s+INDONESIA\b)/gi, (match) => {
+    if (match === match.toUpperCase()) return 'PUSTAKA ALTERNATIF INDONESIA';
+    return 'Pustaka Alternatif Indonesia';
+  });
+};
 
-const toSettingsRow = (settings) => ({
-  id: 'main',
-  publisher_name: settings.publisherName.trim(),
-  tagline: settings.tagline.trim(),
-  whatsapp_phone: settings.whatsappNumber.trim(),
-  contact_city: settings.contactCity.trim(),
-  hero_lead: settings.heroLead.trim(),
-  about_intro: settings.aboutIntro.trim(),
-  show_upcoming: Boolean(settings.showUpcoming),
-  editorial_content: {
-    editorialIdeas: Array.isArray(settings.editorialIdeas) ? settings.editorialIdeas : [],
-    editorialSeedVersion: '20261027-ruang-ide',
-    submissionIntro: String(settings.submissionIntro || defaultSiteSettings.submissionIntro).trim(),
-    submissionsOpen: Boolean(settings.submissionsOpen),
-    logoUrl: String(settings.logoUrl || '').trim(),
-    contactEmail: String(settings.contactEmail || defaultSiteSettings.contactEmail).trim(),
-    contactAddress: String(settings.contactAddress || '').trim(),
-  },
-});
+const mapSettings = (row) => {
+  let pubName = row.publisher_name || defaultSiteSettings.publisherName;
+  if (!pubName || pubName.trim() === 'Pustaka Alternatif') {
+    pubName = 'Pustaka Alternatif Indonesia';
+  } else if (!pubName.includes('Indonesia')) {
+    pubName = `${pubName} Indonesia`;
+  }
+
+  return {
+    ...defaultSiteSettings,
+    publisherName: pubName,
+    tagline: row.tagline || defaultSiteSettings.tagline,
+    whatsappNumber: row.whatsapp_phone || defaultSiteSettings.whatsappNumber,
+    contactCity: row.contact_city || defaultSiteSettings.contactCity,
+    heroLead: ensureBrandIndonesia(row.hero_lead || defaultSiteSettings.heroLead),
+    aboutIntro: ensureBrandIndonesia(row.about_intro || defaultSiteSettings.aboutIntro),
+    showUpcoming: row.show_upcoming ?? defaultSiteSettings.showUpcoming,
+    editorialIdeas: Array.isArray(row.editorial_content?.editorialIdeas)
+      && (row.editorial_content.editorialIdeas.length > 0 || row.editorial_content?.editorialSeedVersion)
+      ? row.editorial_content.editorialIdeas
+      : defaultSiteSettings.editorialIdeas,
+    submissionIntro: ensureBrandIndonesia(row.editorial_content?.submissionIntro || defaultSiteSettings.submissionIntro),
+    submissionsOpen: row.editorial_content?.submissionsOpen ?? defaultSiteSettings.submissionsOpen,
+    logoUrl: row.editorial_content?.logoUrl || defaultSiteSettings.logoUrl,
+    contactEmail: row.editorial_content?.contactEmail || defaultSiteSettings.contactEmail,
+    contactAddress: row.editorial_content?.contactAddress || defaultSiteSettings.contactAddress,
+  };
+};
+
+const toSettingsRow = (settings) => {
+  const pubName = settings.publisherName?.includes('Indonesia')
+    ? settings.publisherName.trim()
+    : `${(settings.publisherName || 'Pustaka Alternatif').trim()} Indonesia`;
+
+  return {
+    id: 'main',
+    publisher_name: pubName,
+    tagline: settings.tagline.trim(),
+    whatsapp_phone: settings.whatsappNumber.trim(),
+    contact_city: settings.contactCity.trim(),
+    hero_lead: ensureBrandIndonesia(settings.heroLead.trim()),
+    about_intro: ensureBrandIndonesia(settings.aboutIntro.trim()),
+    show_upcoming: Boolean(settings.showUpcoming),
+    editorial_content: {
+      editorialIdeas: Array.isArray(settings.editorialIdeas) ? settings.editorialIdeas : [],
+      editorialSeedVersion: '20261027-ruang-ide',
+      submissionIntro: ensureBrandIndonesia(String(settings.submissionIntro || defaultSiteSettings.submissionIntro).trim()),
+      submissionsOpen: Boolean(settings.submissionsOpen),
+      logoUrl: String(settings.logoUrl || '').trim(),
+      contactEmail: String(settings.contactEmail || defaultSiteSettings.contactEmail).trim(),
+      contactAddress: String(settings.contactAddress || '').trim(),
+    },
+  };
+};
 
 const mapOrder = (row) => {
   const unitPriceIdr = Number(row.unit_price_idr ?? row.price_idr ?? parseRupiah(row.price)) || null;
