@@ -21,15 +21,15 @@ const ORDER_STORAGE_KEY = 'ruangbaca.orders.v2';
 const SETTINGS_STORAGE_KEY = 'ruangbaca.settings.v1';
 
 export const defaultSiteSettings = {
-  publisherName: 'Pustaka Alternatif',
+  publisherName: 'Pustaka Alternatif Indonesia',
   tagline: 'Membuka Wacana, Menyalakan Gagasan',
   whatsappNumber: '+6287865997529',
   contactCity: 'Yogyakarta · Indonesia',
-  heroLead: 'PUSTAKA ALTERNATIF menghadirkan karya yang mengajak kita membaca dengan saksama, mempertanyakan anggapan yang mapan, dan memahami kehidupan dari berbagai sudut pandang. Sebagai sebuah ikhtiar keilmuan yang serius, penerbit kami dimaksudkan untuk memperkaya wacana publik serta turut membentuk materi pendidikan dan kebijakan publik. Kami juga berupaya menjadikan hasil kajian ilmiah sebagai sarana pendidikan masyarakat dalam arti luas.',
-  aboutIntro: 'PUSTAKA ALTERNATIF adalah penerbit yang berorientasi pada pendidikan publik. Kami menghadirkan buku untuk memperluas akses pembaca Indonesia terhadap kajian ilmiah, pemikiran kritis, dan karya yang membuka ruang percakapan. Melalui karya asli dan terjemahan, kami ingin mempertemukan pembaca dengan gagasan yang membantu memahami agama, sejarah, kebudayaan, dan kehidupan sosial secara lebih mendalam.',
+  heroLead: 'PUSTAKA ALTERNATIF INDONESIA menghadirkan karya yang mengajak kita membaca dengan saksama, mempertanyakan anggapan yang mapan, dan memahami kehidupan dari berbagai sudut pandang. Sebagai sebuah ikhtiar keilmuan yang serius, penerbit kami dimaksudkan untuk memperkaya wacana publik serta turut membentuk materi pendidikan dan kebijakan publik. Kami juga berupaya menjadikan hasil kajian ilmiah sebagai sarana pendidikan masyarakat dalam arti luas.',
+  aboutIntro: 'PUSTAKA ALTERNATIF INDONESIA adalah penerbit yang berorientasi pada pendidikan publik. Kami menghadirkan buku untuk memperluas akses pembaca Indonesia terhadap kajian ilmiah, pemikiran kritis, dan karya yang membuka ruang percakapan. Melalui karya asli dan terjemahan, kami ingin mempertemukan pembaca dengan gagasan yang membantu memahami agama, sejarah, kebudayaan, dan kehidupan sosial secara lebih mendalam.',
   showUpcoming: true,
   editorialIdeas: DEFAULT_EDITORIAL_IDEAS,
-  submissionIntro: 'PUSTAKA ALTERNATIF menyambut percakapan dengan penulis, penerjemah, pemegang hak, toko buku, dan komunitas literasi. Kami tertarik pada kerja sama yang memperluas akses terhadap bacaan bermutu dan mendukung pendidikan publik.',
+  submissionIntro: 'PUSTAKA ALTERNATIF INDONESIA menyambut percakapan dengan penulis, penerjemah, pemegang hak, toko buku, dan komunitas literasi. Kami tertarik pada kerja sama yang memperluas akses terhadap bacaan bermutu dan mendukung pendidikan publik.',
   submissionsOpen: false,
   logoUrl: '',
   contactEmail: 'pustakaalternatif@gmail.com',
